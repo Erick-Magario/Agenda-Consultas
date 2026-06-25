@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
-from tkinter import Tk, messagebox
+from tkinter import Tk, Label, Button
+import winsound
 
 from banco import criar_tabela, listar_consultas
 
@@ -25,14 +26,36 @@ def verificar_alertas():
             )
 
     if avisos:
+        winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+
         janela = Tk()
-        janela.withdraw()
+        janela.title("Aviso de consulta médica")
+        janela.geometry("450x250")
+        janela.resizable(False, False)
 
-        mensagem = "Consultas próximas:\n\n" + "\n".join(avisos)
+        janela.attributes("-topmost", True)
+        janela.lift()
+        janela.focus_force()
 
-        messagebox.showwarning("Aviso de consulta médica", mensagem)
+        mensagem = "⚠️ Consultas próximas\n\n" + "\n".join(avisos)
 
-        janela.destroy()
+        Label(
+            janela,
+            text=mensagem,
+            font=("Arial", 12),
+            wraplength=400,
+            justify="center"
+            ).pack(pady=35)
+
+        Button(
+            janela,
+            text="OK",
+            font=("Arial", 11),
+            width=12,
+            command=janela.destroy
+        ).pack(pady=10)
+
+        janela.mainloop()
 
 
 verificar_alertas()
