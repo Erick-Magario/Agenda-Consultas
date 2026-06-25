@@ -31,3 +31,5 @@ if avisos:
     messagebox.showwarning("Aviso de consulta médica", mensagem)
 
     janela.destroy()
+
+# teste
