@@ -1,6 +1,13 @@
 import sqlite3
+import os
+import sys
 
-BANCO = "consultas.db"
+if getattr(sys, "frozen", False):
+    PASTA_BASE = os.path.dirname(sys.executable)
+else:
+    PASTA_BASE = os.path.dirname(os.path.abspath(__file__))
+
+BANCO = os.path.join(PASTA_BASE, "consultas.db")
 
 
 def conectar():
