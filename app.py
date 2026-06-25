@@ -1,7 +1,8 @@
 import csv
 import os
 from datetime import datetime, date, timedelta
-from tkinter import Tk, Label, Entry, Button, messagebox, END, Listbox
+from tkinter import messagebox, END, Listbox
+import customtkinter as ctk
 
 ARQUIVO = "consultas.csv"
 
@@ -47,7 +48,40 @@ def salvar_consulta():
     entrada_consulta.delete(0, END)
 
     carregar_consultas()
-    messagebox.showinfo("Sucesso", "Consulta cadastrada com sucesso!")
+    messagebox.showinfo("Sucesso", "Consulta salva com sucesso!")
+
+
+def editar_consulta():
+    selecionado = lista.curselection()
+
+    if not selecionado:
+        messagebox.showerror("Erro", "Selecione uma consulta para editar.")
+        return
+
+    indice = selecionado[0]
+
+    with open(ARQUIVO, "r", encoding="utf-8") as arquivo:
+        linhas = list(csv.DictReader(arquivo))
+
+    funcionario = linhas[indice]["funcionario"]
+    consulta = linhas[indice]["consulta"]
+
+    entrada_funcionario.delete(0, END)
+    entrada_funcionario.insert(0, funcionario)
+
+    entrada_consulta.delete(0, END)
+    entrada_consulta.insert(0, consulta)
+
+    del linhas[indice]
+
+    with open(ARQUIVO, "w", newline="", encoding="utf-8") as arquivo:
+        escritor = csv.writer(arquivo)
+        escritor.writerow(["funcionario", "consulta"])
+
+        for linha in linhas:
+            escritor.writerow([linha["funcionario"], linha["consulta"]])
+
+    carregar_consultas()
 
 
 def excluir_consulta():
@@ -55,6 +89,14 @@ def excluir_consulta():
 
     if not selecionado:
         messagebox.showerror("Erro", "Selecione uma consulta para excluir.")
+        return
+
+    confirmar = messagebox.askyesno(
+        "Confirmar exclusão",
+        "Tem certeza que deseja excluir esta consulta?"
+    )
+
+    if not confirmar:
         return
 
     indice = selecionado[0]
@@ -97,28 +139,92 @@ def verificar_alertas():
 
 garantir_arquivo()
 
-janela = Tk()
+ctk.set_appearance_mode("Light")
+ctk.set_default_color_theme("blue")
+
+janela = ctk.CTk()
 janela.title("Agenda de Consultas")
-janela.geometry("500x450")
+janela.geometry("600x560")
+janela.resizable(False, False)
 
-Label(janela, text="Agenda de Consultas", font=("Arial", 16, "bold")).pack(pady=10)
+titulo = ctk.CTkLabel(
+    janela,
+    text="Agenda de Consultas",
+    font=("Arial", 24, "bold")
+)
+titulo.pack(pady=20)
 
-Label(janela, text="Nome do funcionário:").pack()
-entrada_funcionario = Entry(janela, width=40)
+frame_formulario = ctk.CTkFrame(janela)
+frame_formulario.pack(pady=10, padx=30, fill="x")
+
+label_funcionario = ctk.CTkLabel(
+    frame_formulario,
+    text="Nome do funcionário:"
+)
+label_funcionario.pack(pady=(15, 5))
+
+entrada_funcionario = ctk.CTkEntry(
+    frame_formulario,
+    width=400,
+    placeholder_text="Ex: João Silva"
+)
 entrada_funcionario.pack(pady=5)
 
-Label(janela, text="Data da consulta (AAAA-MM-DD):").pack()
-entrada_consulta = Entry(janela, width=40)
+label_consulta = ctk.CTkLabel(
+    frame_formulario,
+    text="Data da consulta (AAAA-MM-DD):"
+)
+label_consulta.pack(pady=(10, 5))
+
+entrada_consulta = ctk.CTkEntry(
+    frame_formulario,
+    width=400,
+    placeholder_text="Ex: 2026-08-25"
+)
 entrada_consulta.pack(pady=5)
 
-Button(janela, text="Salvar Consulta", command=salvar_consulta).pack(pady=10)
+botao_salvar = ctk.CTkButton(
+    frame_formulario,
+    text="Salvar Consulta",
+    command=salvar_consulta,
+    width=200
+)
+botao_salvar.pack(pady=20)
 
-Label(janela, text="Consultas cadastradas:").pack(pady=5)
+label_lista = ctk.CTkLabel(
+    janela,
+    text="Consultas cadastradas:",
+    font=("Arial", 15, "bold")
+)
+label_lista.pack(pady=(15, 5))
 
-lista = Listbox(janela, width=55, height=10)
+lista = Listbox(
+    janela,
+    width=65,
+    height=8
+)
 lista.pack(pady=5)
 
-Button(janela, text="Excluir Consulta Selecionada", command=excluir_consulta).pack(pady=10)
+frame_botoes = ctk.CTkFrame(janela, fg_color="transparent")
+frame_botoes.pack(pady=15)
+
+botao_editar = ctk.CTkButton(
+    frame_botoes,
+    text="✏ Editar",
+    command=editar_consulta,
+    width=120
+)
+botao_editar.pack(side="left", padx=10)
+
+botao_excluir = ctk.CTkButton(
+    frame_botoes,
+    text="🗑 Excluir",
+    command=excluir_consulta,
+    width=120,
+    fg_color="#c0392b",
+    hover_color="#922b21"
+)
+botao_excluir.pack(side="left", padx=10)
 
 carregar_consultas()
 verificar_alertas()
